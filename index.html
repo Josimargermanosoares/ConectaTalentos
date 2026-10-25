@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConectaTalentos - Emprego Direto por Habilidades</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .role-card.active { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 2px #bfdbfe; }
+        .locked-blur { filter: blur(5px); pointer-events: none; user-select: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- HEADER -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="goHome()">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white text-xl font-bold shadow-md shadow-blue-500/20">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">ConectaTalentos</span>
+                        <span class="hidden sm:inline-block text-xs bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full ml-2">SemPoeira Jobs</span>
+                    </div>
+                </div>
+
+                <!-- Visitante -->
+                <div id="header-guest" class="flex items-center gap-2">
+                    <button onclick="openAuth('login')" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100 rounded-xl transition">
+                        <i class="fa-solid fa-right-to-bracket mr-1"></i> Entrar
+                    </button>
+                    <button onclick="openAuth('register')" class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md shadow-blue-500/20 transition">
+                        <i class="fa-solid fa-user-plus mr-1"></i> Cadastrar-se
+                    </button>
+                </div>
+
+                <!-- Utilizador autenticado -->
+                <div id="header-user" class="hidden items-center gap-3">
+                    <button onclick="showNotifications()" class="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition relative">
+                        <i class="fa-regular fa-bell"></i>
+                        <span id="notif-dot" class="hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-emerald-500 text-white text-[10px] font-bold rounded-full ring-2 ring-white items-center justify-center">0</span>
+                    </button>
+                    <div class="hidden sm:flex items-center gap-2 text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1.5 rounded-full">
+                        <i class="fa-solid fa-location-dot text-red-500"></i>
+                        <span id="header-location">Luanda, Angola</span>
+                    </div>
+                    <div class="flex items-center gap-2 pl-2 border-l border-slate-200">
+                        <button type="button" id="header-avatar" onclick="pickPhoto()" title="Alterar foto de perfil" class="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center text-sm font-bold ring-2 ring-transparent hover:ring-blue-300 transition">M</button>
+                        <div class="hidden md:block leading-tight">
+                            <p id="header-name" class="text-sm font-bold text-slate-800 max-w-[140px] truncate">Nome</p>
+                            <p id="header-role" class="text-[11px] text-slate-500">Candidato</p>
+                        </div>
+                        <button onclick="logout()" title="Terminar sessão" class="ml-1 w-9 h-9 rounded-full hover:bg-red-50 text-slate-500 hover:text-red-600 flex items-center justify-center transition">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ESTATÍSTICAS -->
+    <section class="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white py-6 border-b border-indigo-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+                    <p class="text-2xl sm:text-3xl font-extrabold text-blue-400" id="stat-talents">0</p>
+                    <p class="text-xs text-slate-300 font-medium uppercase tracking-wider mt-1">Candidatos Cadastrados</p>
+                </div>
+                <div class="bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+                    <p class="text-2xl sm:text-3xl font-extrabold text-emerald-400" id="stat-jobs">0</p>
+                    <p class="text-xs text-slate-300 font-medium uppercase tracking-wider mt-1">Vagas Activas</p>
+                </div>
+                <div class="bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+                    <p class="text-2xl sm:text-3xl font-extrabold text-amber-400" id="stat-companies">0</p>
+                    <p class="text-xs text-slate-300 font-medium uppercase tracking-wider mt-1">Empresas Registadas</p>
+                </div>
+                <div class="bg-white/5 backdrop-blur-sm p-3 rounded-xl border border-white/10">
+                    <p class="text-2xl sm:text-3xl font-extrabold text-purple-400" id="stat-invites">0</p>
+                    <p class="text-xs text-slate-300 font-medium uppercase tracking-wider mt-1">Convites Enviados</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ========================================== -->
+        <!-- PÁGINA PÚBLICA (BLOQUEADA PARA VISITANTES) -->
+        <!-- ========================================== -->
+        <div id="public-view" class="space-y-10 animate-fade-in">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 sm:p-12 text-white shadow-lg relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Emprego sem burocracia</span>
+                    <h1 class="text-3xl sm:text-4xl font-extrabold mt-4 leading-tight">Chega de andar na poeira a entregar papéis!</h1>
+                    <p class="mt-3 text-blue-100 text-sm sm:text-base">Crie a sua conta gratuita. Candidatos mostram as suas habilidades uma única vez; empresas encontram talentos jovens por competências, experiência e zona de residência.</p>
+                    <div class="mt-6 flex flex-col sm:flex-row gap-3">
+                        <button onclick="openAuth('register','candidate')" class="px-6 py-3 bg-white text-blue-700 font-bold rounded-xl shadow-md hover:bg-blue-50 transition text-sm">
+                            <i class="fa-solid fa-user-graduate mr-2"></i> Sou Candidato — Criar conta
+                        </button>
+                        <button onclick="openAuth('register','company')" class="px-6 py-3 bg-slate-900/40 border border-white/30 text-white font-bold rounded-xl hover:bg-slate-900/60 transition text-sm">
+                            <i class="fa-solid fa-building mr-2"></i> Sou Empresa — Registar
+                        </button>
+                    </div>
+                    <p class="mt-4 text-sm text-blue-100">Já tem conta? <button onclick="openAuth('login')" class="underline font-bold text-white">Entrar</button></p>
+                </div>
+                <i class="fa-solid fa-briefcase absolute -right-6 -bottom-6 text-[12rem] text-white/10 pointer-events-none"></i>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <div class="w-11 h-11 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-lg mb-3"><i class="fa-solid fa-id-card"></i></div>
+                    <h3 class="font-bold text-slate-900">Perfil e CV automático</h3>
+                    <p class="text-sm text-slate-500 mt-1">Seleccione as suas competências e o seu currículo digital é gerado na hora.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <div class="w-11 h-11 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg mb-3"><i class="fa-solid fa-bullseye"></i></div>
+                    <h3 class="font-bold text-slate-900">Matching por habilidades</h3>
+                    <p class="text-sm text-slate-500 mt-1">Vagas ordenadas pela afinidade com o seu perfil. Candidatura em 1 clique.</p>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                    <div class="w-11 h-11 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg mb-3"><i class="fa-solid fa-users-gear"></i></div>
+                    <h3 class="font-bold text-slate-900">Recrutamento directo</h3>
+                    <p class="text-sm text-slate-500 mt-1">Empresas pesquisam talentos, publicam vagas e convocam para entrevista.</p>
+                </div>
+            </div>
+
+            <!-- Pré-visualização bloqueada -->
+            <div class="relative bg-white rounded-2xl border border-slate-200 shadow-sm p-6 overflow-hidden">
+                <div class="locked-blur space-y-3" aria-hidden="true">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5"><div class="h-4 w-1/2 bg-slate-300 rounded"></div><div class="h-3 w-1/3 bg-slate-200 rounded mt-2"></div><div class="h-3 w-full bg-slate-200 rounded mt-4"></div></div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5"><div class="h-4 w-2/3 bg-slate-300 rounded"></div><div class="h-3 w-1/4 bg-slate-200 rounded mt-2"></div><div class="h-3 w-full bg-slate-200 rounded mt-4"></div></div>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5"><div class="h-4 w-1/2 bg-slate-300 rounded"></div><div class="h-3 w-1/3 bg-slate-200 rounded mt-2"></div><div class="h-3 w-full bg-slate-200 rounded mt-4"></div></div>
+                </div>
+                <div class="absolute inset-0 flex flex-col items-center justify-center bg-white/70 text-center p-6">
+                    <div class="w-14 h-14 rounded-full bg-slate-900 text-white flex items-center justify-center text-xl mb-3"><i class="fa-solid fa-lock"></i></div>
+                    <h3 class="text-lg font-bold text-slate-900">Conteúdo exclusivo para membros</h3>
+                    <p class="text-sm text-slate-600 mt-1 max-w-md">Vagas, perfis de candidatos e ferramentas de recrutamento só ficam disponíveis depois de criar conta ou entrar.</p>
+                    <div class="mt-4 flex gap-2">
+                        <button onclick="openAuth('register')" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition">Cadastrar-se</button>
+                        <button onclick="openAuth('login')" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition">Entrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ÁREA DO CANDIDATO                          -->
+        <!-- ========================================== -->
+        <div id="candidate-view" class="space-y-8 hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-white/20 text-white text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Área do Candidato</span>
+                    <h1 class="text-2xl sm:text-3xl font-bold mt-3">Olá, <span id="cand-greeting">candidato</span>!</h1>
+                    <p class="mt-2 text-blue-100 text-sm sm:text-base">Mantenha as suas habilidades actualizadas. As vagas mais compatíveis aparecem primeiro.</p>
+                </div>
+                <i class="fa-solid fa-briefcase absolute -right-6 -bottom-6 text-9xl text-white/10 pointer-events-none"></i>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+                            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-id-card text-blue-600"></i> O Teu Perfil</h2>
+                            <span class="text-xs text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200"><i class="fa-solid fa-circle text-[8px] mr-1"></i> Perfil Activo</span>
+                        </div>
+
+                        <form id="candidate-form" onsubmit="event.preventDefault(); updateCandidateProfile(true);" class="space-y-4">
+                            <div class="flex items-center gap-4">
+                                <div id="profile-photo-preview" class="w-20 h-20 shrink-0 rounded-2xl overflow-hidden bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center text-2xl font-extrabold"></div>
+                                <div>
+                                    <p class="text-xs font-bold text-slate-700 uppercase tracking-wider">Foto de Perfil</p>
+                                    <div class="flex flex-wrap gap-2 mt-2">
+                                        <button type="button" onclick="pickPhoto()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg transition"><i class="fa-solid fa-camera mr-1"></i> Carregar foto</button>
+                                        <button type="button" id="btn-remove-photo" onclick="removePhoto()" class="hidden px-3 py-1.5 text-red-600 hover:bg-red-50 text-xs font-semibold rounded-lg transition"><i class="fa-regular fa-trash-can mr-1"></i> Remover</button>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 mt-1">JPG, PNG ou WEBP, até 5 MB.</p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nome Completo</label>
+                                <input type="text" id="cand-name" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none transition">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Área Principal</label>
+                                    <select id="cand-area" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"></select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Localização</label>
+                                    <select id="cand-location" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"></select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">As Tuas Competências (seleccione)</label>
+                                <div id="skills-selector" class="flex flex-wrap gap-1.5 p-2 border border-slate-200 rounded-xl bg-slate-50 min-h-[90px]"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Experiência</label>
+                                    <select id="cand-exp" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                        <option value="Primeiro Emprego">Sem Exp. (Primeiro Emprego)</option>
+                                        <option value="Júnior (1-2 anos)">Júnior (1-2 anos)</option>
+                                        <option value="Pleno (3+ anos)">Pleno (3+ anos)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Pretensão Salarial</label>
+                                    <select id="cand-salary" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                        <option value="100.000 Kz - 150.000 Kz">100.000 - 150.000 Kz</option>
+                                        <option value="150.000 Kz - 250.000 Kz">150.000 - 250.000 Kz</option>
+                                        <option value="250.000 Kz+">250.000 Kz +</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-floppy-disk"></i> Guardar Perfil e Recalcular Matches
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- CV -->
+                    <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-6 shadow-md border border-slate-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs uppercase font-bold tracking-widest text-blue-400"><i class="fa-solid fa-file-pdf mr-1"></i> CV Digital Gerado</span>
+                            <button onclick="downloadCV()" class="text-xs bg-white/10 hover:bg-white/20 text-white px-2.5 py-1 rounded-lg border border-white/20 transition flex items-center gap-1"><i class="fa-solid fa-print"></i> Imprimir / PDF</button>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div id="cv-avatar" class="w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-blue-600 flex items-center justify-center text-2xl font-extrabold border-2 border-blue-400 shadow">M</div>
+                            <div>
+                                <h3 id="cv-name" class="font-bold text-lg leading-tight"></h3>
+                                <p id="cv-area" class="text-xs text-slate-300"></p>
+                                <p id="cv-location" class="text-xs text-slate-400 mt-1"></p>
+                                <p id="cv-contact" class="text-xs text-slate-400 mt-1"></p>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-700/60">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Habilidades em Destaque:</p>
+                            <div id="cv-skills" class="flex flex-wrap gap-1.5"></div>
+                        </div>
+                    </div>
+
+                    <!-- Convites recebidos -->
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <h2 class="text-base font-bold text-slate-900 flex items-center gap-2 pb-3 border-b border-slate-100"><i class="fa-solid fa-envelope-open-text text-emerald-500"></i> Convites de Empresas</h2>
+                        <div id="candidate-invites" class="mt-4 space-y-3"></div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                            <div>
+                                <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-bullseye text-emerald-500"></i> Vagas Compatíveis Comigo</h2>
+                                <p class="text-xs text-slate-500 mt-0.5">Ordenadas pela maior afinidade de habilidades</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-slate-500">Filtrar:</span>
+                                <select id="filter-job-type" onchange="renderCandidateJobs()" class="text-xs bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none">
+                                    <option value="all">Todas as Vagas</option>
+                                    <option value="match90">Excelente Match (+80%)</option>
+                                    <option value="local">Na Minha Zona</option>
+                                    <option value="applied">As Minhas Candidaturas</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="jobs-container" class="mt-6 space-y-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ÁREA DA EMPRESA                            -->
+        <!-- ========================================== -->
+        <div id="employer-view" class="space-y-8 hidden">
+            <div class="bg-gradient-to-r from-slate-900 to-indigo-900 rounded-2xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
+                <div class="relative z-10 max-w-2xl">
+                    <span class="bg-indigo-500/30 text-indigo-200 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Área da Empresa</span>
+                    <div class="flex items-center gap-4 mt-3">
+                        <button type="button" id="emp-logo" onclick="pickPhoto()" title="Carregar logótipo" class="w-16 h-16 shrink-0 rounded-2xl overflow-hidden bg-white/10 border border-white/20 flex items-center justify-center text-xl font-extrabold hover:bg-white/20 transition"></button>
+                        <div>
+                            <h1 class="text-2xl sm:text-3xl font-bold"><span id="emp-greeting">Empresa</span></h1>
+                            <button type="button" onclick="pickPhoto()" class="text-xs text-indigo-200 hover:text-white underline mt-1"><i class="fa-solid fa-camera"></i> Carregar logótipo / foto</button>
+                        </div>
+                    </div>
+                    <p class="mt-2 text-indigo-200 text-sm sm:text-base">Pesquise talentos, publique vagas e acompanhe as candidaturas recebidas.</p>
+                </div>
+                <i class="fa-solid fa-users-gear absolute -right-6 -bottom-6 text-9xl text-white/5 pointer-events-none"></i>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex gap-1 border-b border-slate-200 pb-1 w-full sm:w-auto overflow-x-auto">
+                    <button onclick="switchEmployerTab('talents')" id="tab-talents" class="whitespace-nowrap px-4 py-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600 transition"><i class="fa-solid fa-search mr-1.5"></i> Banco de Talentos</button>
+                    <button onclick="switchEmployerTab('post')" id="tab-post" class="whitespace-nowrap px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition"><i class="fa-solid fa-plus-circle mr-1.5"></i> Publicar Vaga</button>
+                    <button onclick="switchEmployerTab('mine')" id="tab-mine" class="whitespace-nowrap px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition"><i class="fa-solid fa-folder-open mr-1.5"></i> Minhas Vagas</button>
+                </div>
+                <span class="text-xs text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1.5 self-start sm:self-auto"><i class="fa-solid fa-shield-halved text-emerald-500"></i> Conta de empresa registada</span>
+            </div>
+
+            <!-- TALENTOS -->
+            <div id="sec-employer-talents" class="space-y-6">
+                <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200 shadow-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                            <input type="text" id="search-talent-keyword" oninput="filterTalents()" placeholder="Procurar por skill (ex: Excel, HTML, Vendas)..." class="w-full pl-10 pr-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <select id="search-talent-location" onchange="filterTalents()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"></select>
+                        <select id="search-talent-exp" onchange="filterTalents()" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option value="all">Qualquer Nível de Experiência</option>
+                            <option value="Primeiro Emprego">Primeiro Emprego</option>
+                            <option value="Júnior">Júnior (1-2 anos)</option>
+                            <option value="Pleno">Pleno (3+ anos)</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="talents-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </div>
+
+            <!-- PUBLICAR -->
+            <div id="sec-employer-post" class="hidden bg-white rounded-2xl p-6 border border-slate-200 shadow-sm max-w-2xl mx-auto">
+                <h2 class="text-xl font-bold text-slate-900 pb-4 border-b border-slate-100 flex items-center gap-2"><i class="fa-solid fa-bullhorn text-blue-600"></i> Cadastrar Oportunidade</h2>
+                <form id="new-job-form" onsubmit="event.preventDefault(); handlePostJob();" class="mt-5 space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Título do Cargo / Vaga</label>
+                        <input type="text" id="post-title" required placeholder="Ex: Operador de Caixa / Atendimento" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Empresa</label>
+                            <input type="text" id="post-company" readonly class="w-full px-3.5 py-2 border border-slate-200 bg-slate-50 text-slate-600 rounded-xl text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Localização</label>
+                            <select id="post-location" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"></select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Habilidades Exigidas (separadas por vírgula)</label>
+                        <input type="text" id="post-skills" required placeholder="Ex: Atendimento ao Cliente, Gestão de Caixa, Excel Avançado" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <p class="text-[11px] text-slate-400 mt-1">Dica: use os mesmos nomes das competências da plataforma para um matching mais preciso.</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Salário Estimado</label>
+                            <input type="text" id="post-salary" placeholder="Ex: 120.000 Kz / Mês" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tipo de Contrato</label>
+                            <select id="post-type" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                                <option value="Tempo Inteiro">Tempo Inteiro</option>
+                                <option value="Estágio">Estágio Remunerado</option>
+                                <option value="Part-time">Part-time</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Descrição Curta da Vaga</label>
+                        <textarea id="post-desc" rows="3" required placeholder="Descreva sucintamente as principais tarefas..." class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md shadow-emerald-600/20 transition"><i class="fa-solid fa-paper-plane mr-1"></i> Publicar Vaga</button>
+                </form>
+            </div>
+
+            <!-- MINHAS VAGAS -->
+            <div id="sec-employer-mine" class="hidden space-y-4">
+                <div id="my-jobs-list" class="space-y-4"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 mt-12 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="font-semibold text-slate-700">ConectaTalentos &copy; 2026 - Conectando o Talento Jovem ao Trabalho Sem Barreiras.</p>
+            <p class="mt-1 text-slate-400">Desenvolvido para eliminar filas e burocracia na procura de emprego em Angola.</p>
+        </div>
+    </footer>
+
+    <!-- ========================================== -->
+    <!-- MODAL DE AUTENTICAÇÃO                      -->
+    <!-- ========================================== -->
+    <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-start sm:items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-100 my-4 animate-fade-in">
+            <div class="flex items-center justify-between px-6 pt-5">
+                <div class="flex bg-slate-100 p-1 rounded-xl">
+                    <button id="auth-tab-login" onclick="setAuthMode('login')" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition">Entrar</button>
+                    <button id="auth-tab-register" onclick="setAuthMode('register')" class="px-4 py-1.5 rounded-lg text-sm font-semibold transition">Criar Conta</button>
+                </div>
+                <button onclick="closeAuth()" class="text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full hover:bg-slate-100"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div id="auth-error" class="hidden mx-6 mt-4 px-3 py-2 bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded-lg"></div>
+
+            <!-- LOGIN -->
+            <form id="login-form" onsubmit="event.preventDefault(); handleLogin();" class="px-6 pb-6 pt-4 space-y-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Bem-vindo de volta</h3>
+                    <p class="text-xs text-slate-500">Entre para aceder às vagas e talentos.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email</label>
+                    <input type="email" id="login-email" autocomplete="email" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="o.teu@email.com">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Palavra-passe</label>
+                    <div class="relative">
+                        <input type="password" id="login-pass" autocomplete="current-password" class="w-full px-3.5 py-2.5 pr-10 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="••••••••">
+                        <button type="button" onclick="togglePass('login-pass', this)" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"><i class="fa-regular fa-eye"></i></button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <label class="flex items-center gap-2 text-slate-600"><input type="checkbox" id="login-remember" checked class="rounded"> Manter sessão iniciada</label>
+                    <button type="button" onclick="setAuthMode('reset')" class="text-blue-600 font-semibold hover:underline">Esqueci a palavra-passe</button>
+                </div>
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm shadow-md shadow-blue-500/20 transition">Entrar</button>
+                <p class="text-center text-xs text-slate-500">Ainda não tem conta? <button type="button" onclick="setAuthMode('register')" class="text-blue-600 font-bold hover:underline">Cadastre-se</button></p>
+            </form>
+
+            <!-- RECUPERAR -->
+            <form id="reset-form" onsubmit="event.preventDefault(); handleReset();" class="hidden px-6 pb-6 pt-4 space-y-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Redefinir palavra-passe</h3>
+                    <p class="text-xs text-slate-500">Indique o email da conta e a nova palavra-passe.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email da conta</label>
+                    <input type="email" id="reset-email" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nova palavra-passe</label>
+                    <input type="password" id="reset-pass" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Mínimo 6 caracteres">
+                </div>
+                <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition">Guardar nova palavra-passe</button>
+                <p class="text-center text-xs"><button type="button" onclick="setAuthMode('login')" class="text-blue-600 font-bold hover:underline">Voltar ao login</button></p>
+            </form>
+
+            <!-- REGISTO -->
+            <form id="register-form" onsubmit="event.preventDefault(); handleRegister();" class="hidden px-6 pb-6 pt-4 space-y-4">
+                <div>
+                    <h3 class="text-lg font-bold text-slate-900">Criar conta gratuita</h3>
+                    <p class="text-xs text-slate-500">Escolha o tipo de conta que pretende.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <button type="button" id="role-candidate" onclick="setRegRole('candidate')" class="role-card border-2 border-slate-200 rounded-xl p-3 text-left transition hover:border-blue-300">
+                        <i class="fa-solid fa-user-graduate text-blue-600 text-lg"></i>
+                        <p class="font-bold text-sm text-slate-900 mt-1">Candidato</p>
+                        <p class="text-[11px] text-slate-500">Procuro emprego</p>
+                    </button>
+                    <button type="button" id="role-company" onclick="setRegRole('company')" class="role-card border-2 border-slate-200 rounded-xl p-3 text-left transition hover:border-blue-300">
+                        <i class="fa-solid fa-building text-indigo-600 text-lg"></i>
+                        <p class="font-bold text-sm text-slate-900 mt-1">Empresa</p>
+                        <p class="text-[11px] text-slate-500">Quero contratar</p>
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="pickPhoto('register')" id="reg-photo-preview" class="w-16 h-16 shrink-0 rounded-2xl overflow-hidden bg-slate-100 border-2 border-dashed border-slate-300 text-slate-400 hover:border-blue-400 hover:text-blue-500 flex items-center justify-center text-xl transition"><i class="fa-solid fa-camera"></i></button>
+                    <div>
+                        <p id="reg-photo-label" class="text-xs font-bold text-slate-700 uppercase tracking-wider">Foto de perfil <span class="font-normal normal-case text-slate-400">(opcional)</span></p>
+                        <div class="mt-1">
+                            <button type="button" onclick="pickPhoto('register')" class="text-xs text-blue-600 font-semibold hover:underline">Carregar foto</button>
+                            <button type="button" id="reg-photo-remove" onclick="clearRegPhoto()" class="hidden text-xs text-red-600 font-semibold hover:underline ml-3">Remover</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="reg-company-fields" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nome da Empresa</label>
+                        <input type="text" id="reg-company" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Ex: Kero Supermercados">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">NIF</label>
+                        <input type="text" id="reg-nif" inputmode="numeric" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="10 dígitos">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Sector de Actividade</label>
+                        <select id="reg-sector" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option>Comércio e Retalho</option><option>Tecnologia e Telecom</option><option>Banca e Finanças</option>
+                            <option>Construção e Energia</option><option>Logística e Transportes</option><option>Serviços</option><option>Outro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label id="reg-name-label" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nome Completo</label>
+                    <input type="text" id="reg-name" autocomplete="name" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Email</label>
+                        <input type="email" id="reg-email" autocomplete="email" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Telefone</label>
+                        <input type="tel" id="reg-phone" autocomplete="tel" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="9XX XXX XXX">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Localização</label>
+                        <select id="reg-location" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"></select>
+                    </div>
+                    <div id="reg-area-wrap">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Área Principal</label>
+                        <select id="reg-area" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"></select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Palavra-passe</label>
+                        <div class="relative">
+                            <input type="password" id="reg-pass" autocomplete="new-password" class="w-full px-3.5 py-2 pr-10 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="Mín. 6 caracteres">
+                            <button type="button" onclick="togglePass('reg-pass', this)" class="absolute right-3 top-2 text-slate-400 hover:text-slate-600"><i class="fa-regular fa-eye"></i></button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Confirmar</label>
+                        <input type="password" id="reg-pass2" autocomplete="new-password" class="w-full px-3.5 py-2 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <label class="flex items-start gap-2 text-xs text-slate-600">
+                    <input type="checkbox" id="reg-terms" class="mt-0.5 rounded">
+                    <span>Aceito os Termos de Uso e a Política de Privacidade da plataforma.</span>
+                </label>
+
+                <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-md shadow-emerald-600/20 transition"><i class="fa-solid fa-user-plus mr-1"></i> Criar Conta</button>
+                <p class="text-center text-xs text-slate-500">Já tem conta? <button type="button" onclick="setAuthMode('login')" class="text-blue-600 font-bold hover:underline">Entrar</button></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONVITE -->
+    <div id="invite-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 animate-fade-in">
+            <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2"><i class="fa-solid fa-envelope-circle-check text-emerald-500 text-xl"></i> Enviar Convite Directo</h3>
+                <button onclick="closeInviteModal()" class="text-slate-400 hover:text-slate-600 text-sm"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="mt-4 space-y-4">
+                <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <div id="modal-candidate-img" class="w-12 h-12"></div>
+                    <div>
+                        <h4 id="modal-candidate-name" class="font-bold text-sm text-slate-800"></h4>
+                        <p id="modal-candidate-skills" class="text-xs text-slate-500"></p>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Empresa</label>
+                    <input type="text" id="invite-company-name" readonly class="w-full px-3 py-2 border border-slate-200 bg-slate-50 rounded-xl text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Mensagem</label>
+                    <textarea id="invite-message" rows="3" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">Olá! Vimos o teu perfil na plataforma ConectaTalentos e ficámos impressionados com as tuas habilidades. Gostaríamos de te convidar para uma entrevista rápida.</textarea>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button onclick="sendInvite()" class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-sm shadow-sm transition flex items-center justify-center gap-2"><i class="fa-solid fa-paper-plane"></i> Enviar Convite</button>
+                    <button onclick="closeInviteModal()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="photo-input" accept="image/png,image/jpeg,image/webp" class="hidden">
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[60] flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        // ==========================================
+        // CONSTANTES
+        // ==========================================
+        const ALL_SKILLS = [
+            "HTML/CSS", "JavaScript", "Excel Avançado", "Atendimento ao Cliente",
+            "Gestão de Caixa", "Vendas Directas", "Inglês Intermédio", "Eletricidade Residencial",
+            "Manutenção de Computadores", "Redes Sociais", "Contabilidade Básica", "Carta de Condução"
+        ];
+        const AREAS = ["Atendimento ao Cliente", "Tecnologia / IT", "Vendas & Comercial", "Eletricidade & Manutenção", "Logística e Armazém", "Contabilidade / Finanças"];
+        const LOCATIONS = ["Luanda (Centro)", "Viana", "Talatona", "Cazenga", "Belas", "Kilamba Kiaxi"];
+
+        const SEED_JOBS = []; // a plataforma começa sem vagas
+
+        const SEED_TALENTS = []; // a plataforma começa sem candidatos
+
+        // ==========================================
+        // ARMAZENAMENTO (localStorage com fallback em memória)
+        // ==========================================
+        const memStore = {};
+        const store = {
+            get(key, fallback) {
+                try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
+                catch (e) { return key in memStore ? memStore[key] : fallback; }
+            },
+            set(key, value) {
+                memStore[key] = value;
+                try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+            },
+            remove(key) {
+                delete memStore[key];
+                try { localStorage.removeItem(key); } catch (e) {}
+            }
+        };
+        const K = { users: "ct_users", session: "ct_session", jobs: "ct_jobs", apps: "ct_apps", invites: "ct_invites" };
+
+        const getUsers = () => store.get(K.users, []);
+        const saveUsers = u => store.set(K.users, u);
+        const getCustomJobs = () => store.get(K.jobs, []);
+        const getApps = () => store.get(K.apps, []);
+        const getInvites = () => store.get(K.invites, []);
+        const allJobs = () => [...getCustomJobs(), ...SEED_JOBS];
+
+        let currentUser = null;
+        let authMode = 'login';
+        let regRole = 'candidate';
+        let inviteTarget = null;
+
+        // ==========================================
+        // UTILITÁRIOS
+        // ==========================================
+        const $ = id => document.getElementById(id);
+        function esc(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        function initials(name) {
+            const p = String(name || '?').trim().split(/\s+/);
+            return ((p[0]?.[0] || '?') + (p.length > 1 ? p[p.length - 1][0] : '')).toUpperCase();
+        }
+        function fillSelect(id, options, withAll) {
+            const el = $(id);
+            el.innerHTML = (withAll ? `<option value="all">${withAll}</option>` : '') + options.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('');
+        }
+        function normPhone(p) {
+            const d = String(p).replace(/[\s\-().]/g, '').replace(/^\+?244/, '');
+            return /^9\d{8}$/.test(d) ? d : null;
+        }
+        async function hashPass(pass, salt) {
+            const data = new TextEncoder().encode(salt + ':' + pass);
+            try {
+                const buf = await crypto.subtle.digest('SHA-256', data);
+                return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+            } catch (e) {
+                let h = 5381; for (const ch of salt + pass) h = ((h << 5) + h + ch.charCodeAt(0)) >>> 0;
+                return 'f' + h.toString(16);
+            }
+        }
+        function newSalt() { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+
+        // ==========================================
+        // INICIALIZAÇÃO
+        // ==========================================
+        window.onload = function () {
+            fillSelect('cand-area', AREAS);
+            fillSelect('cand-location', LOCATIONS);
+            fillSelect('reg-area', AREAS);
+            fillSelect('reg-location', LOCATIONS);
+            fillSelect('post-location', LOCATIONS);
+            fillSelect('search-talent-location', LOCATIONS, 'Todas as Localizações');
+            setRegRole('candidate');
+
+            $('photo-input').addEventListener('change', e => handlePhotoFile(e.target.files[0]));
+            ['cand-area', 'cand-location', 'cand-exp'].forEach(id => $(id).addEventListener('change', () => updateCandidateProfile(false)));
+
+            const sid = store.get(K.session, null) || sessionGet();
+            if (sid) {
+                const u = getUsers().find(x => x.id === sid);
+                if (u) { currentUser = u; }
+            }
+            renderApp();
+        };
+        function sessionGet() { try { return sessionStorage.getItem(K.session); } catch (e) { return null; } }
+        function sessionSet(v) { try { v === null ? sessionStorage.removeItem(K.session) : sessionStorage.setItem(K.session, v); } catch (e) {} }
+
+        // ==========================================
+        // CONTROLO DE ACESSO (GATE)
+        // ==========================================
+        function renderApp() {
+            const guest = !currentUser;
+            $('public-view').classList.toggle('hidden', !guest);
+            $('header-guest').classList.toggle('hidden', !guest);
+            $('header-user').classList.toggle('hidden', guest);
+            $('header-user').classList.toggle('flex', !guest);
+
+            $('candidate-view').classList.add('hidden');
+            $('employer-view').classList.add('hidden');
+
+            updateStats();
+
+            if (guest) return;
+
+            $('header-name').innerText = currentUser.role === 'company' ? currentUser.companyName : currentUser.name;
+            $('header-role').innerText = currentUser.role === 'company' ? 'Empresa' : 'Candidato';
+            refreshPhotoUI();
+            $('header-location').innerText = currentUser.location + ', Angola';
+
+            if (currentUser.role === 'candidate') {
+                $('candidate-view').classList.remove('hidden');
+                fillCandidateForm();
+                renderSkillsSelector();
+                updateCandidateProfile(false);
+                renderCandidateInvites();
+            } else {
+                $('employer-view').classList.remove('hidden');
+                $('emp-greeting').innerText = 'Bem-vindo(a), ' + currentUser.companyName + '!';
+                $('post-company').value = currentUser.companyName;
+                switchEmployerTab('talents');
+                filterTalents();
+                renderMyJobs();
+            }
+            updateNotifBadge();
+        }
+
+        // Garante que só utilizadores autenticados e com o papel certo executam acções
+        function requireRole(role) {
+            if (!currentUser) { openAuth('login'); showToast('Inicie sessão para continuar.', 'info'); return false; }
+            if (currentUser.role !== role) { showToast('Esta acção não está disponível para o seu tipo de conta.', 'info'); return false; }
+            return true;
+        }
+
+        function goHome() { if (!currentUser) window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+        function updateStats() {
+            const users = getUsers();
+            $('stat-talents').innerText = SEED_TALENTS.length + users.filter(u => u.role === 'candidate').length;
+            $('stat-jobs').innerText = allJobs().length;
+            $('stat-companies').innerText = users.filter(u => u.role === 'company').length;
+            $('stat-invites').innerText = getInvites().length;
+        }
+
+        function updateNotifBadge() {
+            let n = 0;
+            if (currentUser?.role === 'candidate') n = getInvites().filter(i => i.candidateId === currentUser.id).length;
+            else if (currentUser?.role === 'company') {
+                const mine = getCustomJobs().filter(j => j.ownerId === currentUser.id).map(j => j.id);
+                n = getApps().filter(a => mine.includes(a.jobId)).length;
+            }
+            const dot = $('notif-dot');
+            dot.innerText = n;
+            dot.classList.toggle('hidden', n === 0);
+            dot.classList.toggle('flex', n > 0);
+        }
+        function showNotifications() {
+            if (!currentUser) return openAuth('login');
+            if (currentUser.role === 'candidate') {
+                const n = getInvites().filter(i => i.candidateId === currentUser.id).length;
+                showToast(n ? `Tem ${n} convite(s) de empresas.` : 'Sem notificações pendentes no momento.', 'info');
+            } else {
+                const mine = getCustomJobs().filter(j => j.ownerId === currentUser.id).map(j => j.id);
+                const n = getApps().filter(a => mine.includes(a.jobId)).length;
+                showToast(n ? `Recebeu ${n} candidatura(s) às suas vagas.` : 'Sem candidaturas recebidas ainda.', 'info');
+                if (n) switchEmployerTab('mine');
+            }
+        }
+
+        // ==========================================
+        // AUTENTICAÇÃO — UI
+        // ==========================================
+        function openAuth(mode, role) {
+            if (role) setRegRole(role);
+            setAuthMode(mode || 'login');
+            const m = $('auth-modal');
+            m.classList.remove('hidden'); m.classList.add('flex');
+        }
+        function closeAuth() {
+            const m = $('auth-modal');
+            m.classList.add('hidden'); m.classList.remove('flex');
+            showAuthError('');
+        }
+        function setAuthMode(mode) {
+            authMode = mode;
+            showAuthError('');
+            $('login-form').classList.toggle('hidden', mode !== 'login');
+            $('register-form').classList.toggle('hidden', mode !== 'register');
+            $('reset-form').classList.toggle('hidden', mode !== 'reset');
+            const on = "px-4 py-1.5 rounded-lg text-sm font-semibold transition bg-white text-blue-600 shadow-sm";
+            const off = "px-4 py-1.5 rounded-lg text-sm font-semibold transition text-slate-600 hover:text-slate-900";
+            $('auth-tab-login').className = (mode === 'register') ? off : on;
+            $('auth-tab-register').className = (mode === 'register') ? on : off;
+        }
+        function showAuthError(msg) {
+            const el = $('auth-error');
+            el.innerText = msg;
+            el.classList.toggle('hidden', !msg);
+        }
+        function setRegRole(role) {
+            regRole = role;
+            $('role-candidate').classList.toggle('active', role === 'candidate');
+            $('role-company').classList.toggle('active', role === 'company');
+            $('reg-company-fields').classList.toggle('hidden', role !== 'company');
+            $('reg-area-wrap').classList.toggle('hidden', role !== 'candidate');
+            $('reg-name-label').innerText = role === 'company' ? 'Nome do Responsável' : 'Nome Completo';
+            $('reg-photo-label').innerHTML = (role === 'company' ? 'Logótipo da empresa' : 'Foto de perfil') + ' <span class="font-normal normal-case text-slate-400">(opcional)</span>';
+        }
+        function togglePass(id, btn) {
+            const el = $(id);
+            const show = el.type === 'password';
+            el.type = show ? 'text' : 'password';
+            btn.innerHTML = show ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
+        }
+
+        // ==========================================
+        // AUTENTICAÇÃO — LÓGICA
+        // ==========================================
+        async function handleRegister() {
+            showAuthError('');
+            const name = $('reg-name').value.trim();
+            const email = $('reg-email').value.trim().toLowerCase();
+            const phoneRaw = $('reg-phone').value.trim();
+            const pass = $('reg-pass').value;
+            const pass2 = $('reg-pass2').value;
+            const location = $('reg-location').value;
+
+            if (name.length < 3) return showAuthError('Indique o nome completo.');
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showAuthError('Email inválido.');
+            const phone = normPhone(phoneRaw);
+            if (!phone) return showAuthError('Telefone inválido. Use o formato angolano: 9XX XXX XXX.');
+            if (pass.length < 6) return showAuthError('A palavra-passe deve ter pelo menos 6 caracteres.');
+            if (pass !== pass2) return showAuthError('As palavras-passe não coincidem.');
+            if (!$('reg-terms').checked) return showAuthError('Tem de aceitar os Termos de Uso para continuar.');
+
+            let companyName = '', nif = '';
+            if (regRole === 'company') {
+                companyName = $('reg-company').value.trim();
+                nif = $('reg-nif').value.replace(/\s/g, '');
+                if (companyName.length < 2) return showAuthError('Indique o nome da empresa.');
+                if (!/^\d{9,10}$/.test(nif)) return showAuthError('NIF inválido (9 a 10 dígitos).');
+            }
+
+            const users = getUsers();
+            if (users.some(u => u.email === email)) return showAuthError('Já existe uma conta com este email. Tente entrar.');
+            if (regRole === 'company' && users.some(u => u.role === 'company' && u.nif === nif)) return showAuthError('Já existe uma empresa registada com este NIF.');
+
+            const salt = newSalt();
+            const user = {
+                id: 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                role: regRole, email, phone, name, location, salt,
+                passHash: await hashPass(pass, salt),
+                createdAt: new Date().toISOString(),
+                photo: regPhoto
+            };
+            if (regRole === 'candidate') {
+                Object.assign(user, { area: $('reg-area').value, skills: [], experience: "Primeiro Emprego", salary: "100.000 Kz - 150.000 Kz" });
+            } else {
+                Object.assign(user, { companyName, nif, sector: $('reg-sector').value });
+            }
+            users.push(user);
+            saveUsers(users);
+
+            startSession(user, true);
+            closeAuth();
+            $('register-form').reset(); setRegRole(regRole); regPhoto = null; renderRegPhoto();
+            showToast(regRole === 'company' ? 'Conta de empresa criada! Já pode publicar vagas.' : 'Conta criada! Complete o seu perfil escolhendo as suas competências.', 'success');
+        }
+
+        async function handleLogin() {
+            showAuthError('');
+            const email = $('login-email').value.trim().toLowerCase();
+            const pass = $('login-pass').value;
+            if (!email || !pass) return showAuthError('Preencha o email e a palavra-passe.');
+
+            const user = getUsers().find(u => u.email === email);
+            const ok = user && (await hashPass(pass, user.salt)) === user.passHash;
+            if (!ok) return showAuthError('Email ou palavra-passe incorrectos.');
+
+            startSession(user, $('login-remember').checked);
+            closeAuth();
+            $('login-form').reset();
+            showToast('Sessão iniciada. Bem-vindo(a), ' + (user.role === 'company' ? user.companyName : user.name.split(' ')[0]) + '!', 'success');
+        }
+
+        async function handleReset() {
+            showAuthError('');
+            const email = $('reset-email').value.trim().toLowerCase();
+            const pass = $('reset-pass').value;
+            const users = getUsers();
+            const u = users.find(x => x.email === email);
+            if (!u) return showAuthError('Não encontrámos nenhuma conta com esse email.');
+            if (pass.length < 6) return showAuthError('A nova palavra-passe deve ter pelo menos 6 caracteres.');
+            u.salt = newSalt();
+            u.passHash = await hashPass(pass, u.salt);
+            saveUsers(users);
+            $('reset-form').reset();
+            setAuthMode('login');
+            $('login-email').value = email;
+            showToast('Palavra-passe actualizada. Já pode entrar.', 'success');
+        }
+
+        function startSession(user, remember) {
+            currentUser = user;
+            if (remember) store.set(K.session, user.id); else store.remove(K.session);
+            sessionSet(user.id);
+            renderApp();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function logout() {
+            currentUser = null;
+            store.remove(K.session);
+            sessionSet(null);
+            renderApp();
+            showToast('Sessão terminada.', 'info');
+        }
+
+        function persistCurrentUser() {
+            const users = getUsers();
+            const i = users.findIndex(u => u.id === currentUser.id);
+            if (i >= 0) { users[i] = currentUser; saveUsers(users); }
+        }
+
+        // ==========================================
+        // CANDIDATO
+        // ==========================================
+        function fillCandidateForm() {
+            $('cand-name').value = currentUser.name;
+            $('cand-area').value = currentUser.area;
+            $('cand-location').value = currentUser.location;
+            $('cand-exp').value = currentUser.experience;
+            $('cand-salary').value = currentUser.salary;
+            $('cand-greeting').innerText = currentUser.name.split(' ')[0];
+        }
+
+        function renderSkillsSelector() {
+            const container = $('skills-selector');
+            container.innerHTML = '';
+            ALL_SKILLS.forEach(skill => {
+                const sel = currentUser.skills.includes(skill);
+                const tag = document.createElement('button');
+                tag.type = 'button';
+                tag.onclick = () => toggleSkill(skill);
+                tag.className = `px-2.5 py-1 rounded-lg text-xs font-medium transition flex items-center gap-1 ${sel ? 'bg-blue-600 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'}`;
+                tag.innerHTML = `<i class="fa-solid ${sel ? 'fa-check' : 'fa-plus'} text-[10px]"></i> ${esc(skill)}`;
+                container.appendChild(tag);
+            });
+        }
+
+        function toggleSkill(skill) {
+            if (!requireRole('candidate')) return;
+            currentUser.skills = currentUser.skills.includes(skill) ? currentUser.skills.filter(s => s !== skill) : [...currentUser.skills, skill];
+            renderSkillsSelector();
+            updateCandidateProfile(false);
+        }
+
+        function updateCandidateProfile(showMsg) {
+            if (!currentUser || currentUser.role !== 'candidate') return;
+            currentUser.name = $('cand-name').value.trim() || currentUser.name;
+            currentUser.area = $('cand-area').value;
+            currentUser.location = $('cand-location').value;
+            currentUser.experience = $('cand-exp').value;
+            currentUser.salary = $('cand-salary').value;
+            persistCurrentUser();
+
+            $('cand-greeting').innerText = currentUser.name.split(' ')[0];
+            $('header-name').innerText = currentUser.name;
+            refreshPhotoUI();
+            $('header-location').innerText = currentUser.location + ', Angola';
+
+            $('cv-name').innerText = currentUser.name;
+            $('cv-area').innerText = currentUser.area + ' · ' + currentUser.experience;
+            $('cv-location').innerHTML = `<i class="fa-solid fa-location-dot text-red-400"></i> ${esc(currentUser.location)}, Luanda`;
+            $('cv-contact').innerHTML = `<i class="fa-solid fa-phone text-emerald-400"></i> ${esc(currentUser.phone)} &nbsp; <i class="fa-solid fa-envelope text-blue-400"></i> ${esc(currentUser.email)}`;
+
+            const cvs = $('cv-skills');
+            cvs.innerHTML = currentUser.skills.length
+                ? currentUser.skills.map(s => `<span class="bg-blue-500/20 text-blue-300 text-[11px] px-2 py-0.5 rounded font-medium">${esc(s)}</span>`).join('')
+                : `<span class="text-xs text-slate-400 italic">Nenhuma skill seleccionada</span>`;
+
+            renderCandidateJobs();
+            if (showMsg) showToast('Perfil guardado e matches recalculados!', 'success');
+        }
+
+        function calculateMatchPercentage(candSkills, jobSkills) {
+            if (!jobSkills || jobSkills.length === 0) return 50;
+            const norm = a => a.map(s => s.toLowerCase());
+            const cs = norm(candSkills);
+            const count = jobSkills.filter(s => cs.includes(s.toLowerCase())).length;
+            return Math.max(Math.round((count / jobSkills.length) * 100), 40);
+        }
+
+        function renderCandidateJobs() {
+            if (!currentUser || currentUser.role !== 'candidate') return;
+            const container = $('jobs-container');
+            const filterType = $('filter-job-type').value;
+            const myApps = getApps().filter(a => a.candidateId === currentUser.id).map(a => a.jobId);
+
+            let jobs = allJobs().map(j => ({ ...j, matchPct: calculateMatchPercentage(currentUser.skills, j.requiredSkills) }));
+            jobs.sort((a, b) => b.matchPct - a.matchPct);
+
+            if (filterType === 'match90') jobs = jobs.filter(j => j.matchPct >= 80);
+            else if (filterType === 'local') jobs = jobs.filter(j => j.location === currentUser.location);
+            else if (filterType === 'applied') jobs = jobs.filter(j => myApps.includes(j.id));
+
+            if (jobs.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400"><i class="fa-solid fa-folder-open text-4xl mb-2"></i><p class="text-sm">${allJobs().length === 0 ? 'Ainda não há vagas publicadas. Volte em breve!' : 'Nenhuma vaga encontrada para estes critérios.'}</p></div>`;
+                return;
+            }
+
+            container.innerHTML = jobs.map(job => {
+                const applied = myApps.includes(job.id);
+                const badge = job.matchPct < 70 ? "bg-amber-100 text-amber-800 border-amber-300" : "bg-emerald-100 text-emerald-800 border-emerald-300";
+                const mine = currentUser.skills.map(s => s.toLowerCase());
+                return `
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 hover:border-blue-300 transition shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h3 class="font-bold text-slate-900 text-base">${esc(job.title)}</h3>
+                                <span class="text-xs px-2 py-0.5 rounded-full font-extrabold border ${badge}"><i class="fa-solid fa-bolt text-[10px] mr-1"></i>${job.matchPct}% Match</span>
+                            </div>
+                            <p class="text-xs font-semibold text-blue-600 mt-0.5">${esc(job.company)} · <span class="text-slate-500 font-medium"><i class="fa-solid fa-location-dot text-red-400"></i> ${esc(job.location)}</span></p>
+                        </div>
+                        <span class="text-xs bg-white text-slate-600 border border-slate-200 px-2.5 py-1 rounded-lg font-medium self-start">${esc(job.type)}</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-3 leading-relaxed">${esc(job.description)}</p>
+                    <div class="mt-4 pt-3 border-t border-slate-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="flex flex-wrap gap-1">
+                            ${job.requiredSkills.map(s => `<span class="text-[11px] px-2 py-0.5 rounded ${mine.includes(s.toLowerCase()) ? 'bg-emerald-100 text-emerald-800 font-semibold' : 'bg-slate-200 text-slate-600'}">${esc(s)}</span>`).join('')}
+                        </div>
+                        <div class="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                            <span class="text-xs font-bold text-slate-700">${esc(job.salary)}</span>
+                            <button onclick="applyToJob(${job.id})" ${applied ? 'disabled' : ''} class="px-4 py-2 text-xs font-bold rounded-xl transition ${applied ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20'}">
+                                ${applied ? '<i class="fa-solid fa-check mr-1"></i> Candidatado' : 'Candidatura Rápida em 1-Clique'}
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function applyToJob(jobId) {
+            if (!requireRole('candidate')) return;
+            const apps = getApps();
+            if (apps.some(a => a.jobId === jobId && a.candidateId === currentUser.id)) return;
+            if (currentUser.skills.length === 0) return showToast('Seleccione pelo menos uma competência no seu perfil antes de se candidatar.', 'info');
+            apps.push({ id: 'a' + Date.now(), jobId, candidateId: currentUser.id, date: new Date().toISOString() });
+            store.set(K.apps, apps);
+            renderCandidateJobs();
+            updateStats();
+            showToast('Candidatura enviada! A empresa foi notificada do teu perfil.', 'success');
+        }
+
+        function renderCandidateInvites() {
+            const list = getInvites().filter(i => i.candidateId === currentUser.id).sort((a, b) => b.date.localeCompare(a.date));
+            $('candidate-invites').innerHTML = list.length
+                ? list.map(i => `
+                    <div class="border border-emerald-200 bg-emerald-50 rounded-xl p-3">
+                        <div class="flex items-center gap-2">
+                            ${avatarHtml({ name: i.companyName, avatar: (getUsers().find(u => u.id === i.companyId) || {}).photo }, 'w-8 h-8 text-xs')}
+                            <p class="text-sm font-bold text-slate-900">${esc(i.companyName)}</p>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-1">${esc(i.message)}</p>
+                        <p class="text-[11px] text-slate-500 mt-2"><i class="fa-solid fa-phone"></i> ${esc(i.companyPhone)} · <i class="fa-solid fa-envelope"></i> ${esc(i.companyEmail)}</p>
+                    </div>`).join('')
+                : `<p class="text-xs text-slate-400 text-center py-3">Ainda não recebeu convites. Complete o seu perfil para aparecer nas pesquisas das empresas.</p>`;
+        }
+
+        function downloadCV() {
+            if (!requireRole('candidate')) return;
+            const w = window.open('', '_blank');
+            if (!w) return showToast('Permita pop-ups para gerar o CV.', 'info');
+            const u = currentUser;
+            w.document.write(`<!doctype html><html lang="pt"><head><meta charset="utf-8"><title>CV - ${esc(u.name)}</title>
+            <style>body{font-family:Arial,sans-serif;max-width:700px;margin:40px auto;color:#0f172a}h1{margin:0}h2{border-bottom:2px solid #2563eb;padding-bottom:4px;margin-top:28px;font-size:16px;color:#2563eb}
+            .tag{display:inline-block;background:#e2e8f0;border-radius:6px;padding:3px 9px;margin:3px;font-size:13px}p{margin:4px 0}</style></head><body>
+            ${u.photo ? `<img src="${esc(u.photo)}" alt="" style="width:110px;height:110px;border-radius:12px;object-fit:cover;float:right">` : ''}
+            <h1>${esc(u.name)}</h1><p>${esc(u.area)} · ${esc(u.experience)}</p>
+            <p>${esc(u.location)}, Luanda · ${esc(u.phone)} · ${esc(u.email)}</p>
+            <h2>Competências</h2><div>${u.skills.map(s => `<span class="tag">${esc(s)}</span>`).join('') || '<p>—</p>'}</div>
+            <h2>Pretensão Salarial</h2><p>${esc(u.salary)}</p>
+            <p style="margin-top:40px;font-size:11px;color:#64748b">Gerado pela plataforma ConectaTalentos.</p>
+            <script>window.onload=()=>window.print()<\/script></body></html>`);
+            w.document.close();
+        }
+
+        // ==========================================
+        // EMPRESA
+        // ==========================================
+        function switchEmployerTab(tab) {
+            if (!currentUser || currentUser.role !== 'company') return;
+            const map = { talents: 'sec-employer-talents', post: 'sec-employer-post', mine: 'sec-employer-mine' };
+            Object.entries(map).forEach(([t, sec]) => {
+                $(sec).classList.toggle('hidden', t !== tab);
+                $('tab-' + t).className = t === tab
+                    ? "whitespace-nowrap px-4 py-2 text-sm font-bold border-b-2 border-blue-600 text-blue-600 transition"
+                    : "whitespace-nowrap px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition";
+            });
+            if (tab === 'mine') renderMyJobs();
+        }
+
+        function allTalents() {
+            const reg = getUsers().filter(u => u.role === 'candidate').map(u => ({
+                id: u.id, name: u.name, area: u.area, location: u.location, skills: u.skills,
+                experience: u.experience, avatar: u.photo || null, availability: 'Imediata', registered: true
+            }));
+            return [...reg, ...SEED_TALENTS];
+        }
+
+        function avatarHtml(t, size) {
+            return t.avatar
+                ? `<img src="${esc(t.avatar)}" class="${size} rounded-xl object-cover border border-slate-200" alt="">`
+                : `<div class="${size} rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center font-extrabold">${esc(initials(t.name))}</div>`;
+        }
+
+        function renderTalentsGrid(list) {
+            const container = $('talents-grid');
+            if (list.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400"><i class="fa-solid fa-user-slash text-4xl mb-2"></i><p class="text-sm">${allTalents().length === 0 ? 'Ainda não há candidatos cadastrados.' : 'Nenhum jovem encontrado com os filtros seleccionados.'}</p></div>`;
+                return;
+            }
+            const invitedIds = getInvites().filter(i => i.companyId === currentUser.id).map(i => String(i.candidateId));
+            container.innerHTML = list.map(t => `
+                <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start gap-3">
+                            ${avatarHtml(t, 'w-14 h-14 text-lg')}
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-base leading-snug">${esc(t.name)}</h3>
+                                <p class="text-xs font-semibold text-blue-600">${esc(t.area)}</p>
+                                <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-red-500"></i> ${esc(t.location)} · ${esc(t.experience)}</p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Habilidades:</p>
+                            <div class="flex flex-wrap gap-1">
+                                ${t.skills.length ? t.skills.map(s => `<span class="bg-slate-100 text-slate-700 text-[11px] px-2 py-0.5 rounded border border-slate-200 font-medium">${esc(s)}</span>`).join('') : '<span class="text-[11px] text-slate-400 italic">Perfil ainda sem competências</span>'}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
+                        <span class="text-xs text-slate-500"><i class="fa-regular fa-clock"></i> ${esc(t.availability)}</span>
+                        ${invitedIds.includes(String(t.id))
+                            ? `<span class="px-3 py-1.5 bg-slate-100 text-slate-500 text-xs font-bold rounded-xl"><i class="fa-solid fa-check"></i> Convidado</span>`
+                            : `<button onclick="openInviteModal('${t.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center gap-1.5"><i class="fa-solid fa-paper-plane"></i> Convocar</button>`}
+                    </div>
+                </div>`).join('');
+        }
+
+        function filterTalents() {
+            if (!currentUser || currentUser.role !== 'company') return;
+            const kw = $('search-talent-keyword').value.toLowerCase();
+            const loc = $('search-talent-location').value;
+            const exp = $('search-talent-exp').value;
+            renderTalentsGrid(allTalents().filter(t =>
+                (!kw || t.skills.some(s => s.toLowerCase().includes(kw)) || t.name.toLowerCase().includes(kw) || t.area.toLowerCase().includes(kw)) &&
+                (loc === 'all' || t.location === loc) &&
+                (exp === 'all' || t.experience.includes(exp))
+            ));
+        }
+
+        function handlePostJob() {
+            if (!requireRole('company')) return;
+            const skills = $('post-skills').value.split(',').map(s => s.trim()).filter(Boolean);
+            if (!skills.length) return showToast('Indique pelo menos uma habilidade.', 'info');
+            const jobs = getCustomJobs();
+            jobs.unshift({
+                id: Date.now(), ownerId: currentUser.id, title: $('post-title').value.trim(),
+                company: currentUser.companyName, location: $('post-location').value,
+                requiredSkills: skills, salary: $('post-salary').value.trim() || "A combinar",
+                type: $('post-type').value, description: $('post-desc').value.trim()
+            });
+            store.set(K.jobs, jobs);
+            $('new-job-form').reset();
+            $('post-company').value = currentUser.companyName;
+            updateStats(); updateNotifBadge();
+            showToast('Vaga publicada com sucesso! Os candidatos já a podem ver.', 'success');
+            switchEmployerTab('mine');
+        }
+
+        function renderMyJobs() {
+            const mine = getCustomJobs().filter(j => j.ownerId === currentUser.id);
+            const apps = getApps();
+            const users = getUsers();
+            const box = $('my-jobs-list');
+            if (!mine.length) {
+                box.innerHTML = `<div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-400"><i class="fa-solid fa-folder-open text-4xl mb-2"></i><p class="text-sm">Ainda não publicou vagas.</p><button onclick="switchEmployerTab('post')" class="mt-3 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl">Publicar primeira vaga</button></div>`;
+                return;
+            }
+            box.innerHTML = mine.map(j => {
+                const cands = apps.filter(a => a.jobId === j.id).map(a => users.find(u => u.id === a.candidateId)).filter(Boolean);
+                return `
+                <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <h3 class="font-bold text-slate-900">${esc(j.title)}</h3>
+                            <p class="text-xs text-slate-500 mt-0.5"><i class="fa-solid fa-location-dot text-red-400"></i> ${esc(j.location)} · ${esc(j.type)} · ${esc(j.salary)}</p>
+                        </div>
+                        <button onclick="deleteJob(${j.id})" class="text-xs text-red-600 hover:bg-red-50 px-2.5 py-1.5 rounded-lg font-semibold"><i class="fa-regular fa-trash-can"></i> Remover</button>
+                    </div>
+                    <p class="text-xs font-bold text-slate-700 uppercase tracking-wider mt-4 mb-2">Candidaturas (${cands.length})</p>
+                    ${cands.length ? `<div class="space-y-2">${cands.map(c => `
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                            <div class="flex items-center gap-3">
+                                ${avatarHtml({ name: c.name, avatar: c.photo }, 'w-10 h-10 text-sm')}
+                                <div>
+                                    <p class="text-sm font-bold text-slate-900">${esc(c.name)} <span class="text-[11px] ml-1 px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">${calculateMatchPercentage(c.skills, j.requiredSkills)}% Match</span></p>
+                                    <p class="text-[11px] text-slate-500">${esc(c.area)} · ${esc(c.location)} · ${esc(c.experience)}</p>
+                                </div>
+                            </div>
+                            <p class="text-[11px] text-slate-600"><i class="fa-solid fa-phone"></i> ${esc(c.phone)} · <i class="fa-solid fa-envelope"></i> ${esc(c.email)}</p>
+                        </div>`).join('')}</div>`
+                    : `<p class="text-xs text-slate-400">Ainda sem candidaturas.</p>`}
+                </div>`;
+            }).join('');
+        }
+
+        function deleteJob(id) {
+            if (!requireRole('company')) return;
+            if (!confirm('Remover esta vaga? As candidaturas associadas também serão apagadas.')) return;
+            store.set(K.jobs, getCustomJobs().filter(j => !(j.id === id && j.ownerId === currentUser.id)));
+            store.set(K.apps, getApps().filter(a => a.jobId !== id));
+            updateStats(); updateNotifBadge(); renderMyJobs();
+            showToast('Vaga removida.', 'info');
+        }
+
+        // ==========================================
+        // CONVITES
+        // ==========================================
+        function openInviteModal(talentId) {
+            if (!requireRole('company')) return;
+            inviteTarget = allTalents().find(t => String(t.id) === String(talentId));
+            if (!inviteTarget) return;
+            $('modal-candidate-img').innerHTML = avatarHtml(inviteTarget, 'w-12 h-12');
+            $('modal-candidate-name').innerText = inviteTarget.name;
+            $('modal-candidate-skills').innerText = inviteTarget.skills.slice(0, 3).join(', ');
+            $('invite-company-name').value = currentUser.companyName;
+            const m = $('invite-modal'); m.classList.remove('hidden'); m.classList.add('flex');
+        }
+        function closeInviteModal() {
+            const m = $('invite-modal'); m.classList.add('hidden'); m.classList.remove('flex');
+            inviteTarget = null;
+        }
+        function sendInvite() {
+            if (!requireRole('company') || !inviteTarget) return;
+            const msg = $('invite-message').value.trim();
+            if (!msg) return showToast('Escreva uma mensagem para o candidato.', 'info');
+            const invites = getInvites();
+            invites.push({
+                id: 'i' + Date.now(), companyId: currentUser.id, companyName: currentUser.companyName,
+                companyPhone: currentUser.phone, companyEmail: currentUser.email,
+                candidateId: inviteTarget.id, message: msg, date: new Date().toISOString()
+            });
+            store.set(K.invites, invites);
+            const name = inviteTarget.name;
+            closeInviteModal();
+            updateStats();
+            filterTalents();
+            showToast(`Convite enviado a ${name}!`, 'success');
+        }
+
+        // ==========================================
+        // FOTO DE PERFIL
+        // ==========================================
+        let photoTarget = 'profile';
+        let regPhoto = null;
+
+        function pickPhoto(target) {
+            photoTarget = target === 'register' ? 'register' : 'profile';
+            if (photoTarget === 'profile' && !currentUser) { openAuth('login'); return; }
+            const input = $('photo-input');
+            input.value = '';
+            input.click();
+        }
+
+        // Recorta ao centro (quadrado) e reduz para 256x256 para poupar espaço
+        function resizeImage(file, size = 256) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    const side = Math.min(img.width, img.height);
+                    const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+                    const canvas = document.createElement('canvas');
+                    canvas.width = canvas.height = size;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, size, size);
+                    ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+                    URL.revokeObjectURL(url);
+                    resolve(canvas.toDataURL('image/jpeg', 0.85));
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('imagem inválida')); };
+                img.src = url;
+            });
+        }
+
+        async function handlePhotoFile(file) {
+            if (!file) return;
+            if (!/^image\/(jpeg|png|webp)$/.test(file.type)) return showToast('Escolha uma imagem JPG, PNG ou WEBP.', 'info');
+            if (file.size > 5 * 1024 * 1024) return showToast('A imagem é demasiado grande (máximo 5 MB).', 'info');
+
+            let dataUrl;
+            try { dataUrl = await resizeImage(file); }
+            catch (e) { return showToast('Não foi possível ler a imagem. Tente outra.', 'info'); }
+
+            if (photoTarget === 'register') { regPhoto = dataUrl; renderRegPhoto(); return; }
+            if (!currentUser) return;
+
+            currentUser.photo = dataUrl;
+            persistCurrentUser();
+            const saved = getUsers().find(u => u.id === currentUser.id);
+            if (!saved || saved.photo !== dataUrl) showToast('A foto foi aplicada, mas o armazenamento do navegador está cheio e não ficou guardada.', 'info');
+            else showToast('Foto actualizada com sucesso!', 'success');
+            refreshPhotoUI();
+            if (currentUser.role === 'company') { filterTalents(); renderMyJobs(); }
+        }
+
+        function removePhoto() {
+            if (!currentUser) return;
+            currentUser.photo = null;
+            persistCurrentUser();
+            refreshPhotoUI();
+            showToast('Foto removida.', 'info');
+        }
+
+        function photoInner(photo, name) {
+            return photo ? `<img src="${esc(photo)}" alt="" class="w-full h-full object-cover">` : esc(initials(name));
+        }
+
+        function refreshPhotoUI() {
+            if (!currentUser) return;
+            const name = currentUser.role === 'company' ? currentUser.companyName : currentUser.name;
+            $('header-avatar').innerHTML = photoInner(currentUser.photo, name);
+            if (currentUser.role === 'candidate') {
+                $('cv-avatar').innerHTML = photoInner(currentUser.photo, name);
+                $('profile-photo-preview').innerHTML = photoInner(currentUser.photo, name);
+                $('btn-remove-photo').classList.toggle('hidden', !currentUser.photo);
+            } else {
+                $('emp-logo').innerHTML = photoInner(currentUser.photo, name);
+            }
+        }
+
+        function renderRegPhoto() {
+            $('reg-photo-preview').innerHTML = regPhoto
+                ? `<img src="${esc(regPhoto)}" alt="" class="w-full h-full object-cover">`
+                : '<i class="fa-solid fa-camera"></i>';
+            $('reg-photo-remove').classList.toggle('hidden', !regPhoto);
+        }
+        function clearRegPhoto() { regPhoto = null; renderRegPhoto(); }
+
+        // ==========================================
+        // TOASTS
+        // ==========================================
+        function showToast(message, type = 'info') {
+            const container = $('toast-container');
+            const toast = document.createElement('div');
+            let bg = "bg-slate-900 text-white";
+            let icon = `<i class="fa-solid fa-circle-info text-blue-400"></i>`;
+            if (type === 'success') { bg = "bg-emerald-900 text-white border border-emerald-700"; icon = `<i class="fa-solid fa-circle-check text-emerald-400"></i>`; }
+            toast.className = `${bg} px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 animate-fade-in pointer-events-auto max-w-sm`;
+            toast.innerHTML = `${icon} <span>${esc(message)}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3800);
+        }
+
+        // Fechar modais com ESC
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAuth(); closeInviteModal(); } });
+    </script>
+</body>
+</html>
